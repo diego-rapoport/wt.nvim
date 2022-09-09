@@ -30,8 +30,13 @@ Data is saved as `json`. The current structure is:
 ```json
 [
   {
-    <nameofproject>: {
-      timeSpent: <number in seconds>
+    "projectOne": {
+      "timeSpent": 500
+    }
+  },
+  {
+    "projectTwo": {
+      "timeSpent": 375
     }
   }
 ]
