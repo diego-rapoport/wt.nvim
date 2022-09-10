@@ -94,19 +94,22 @@ M.stopWT = function ()
     vim.notify("Ending work at " .. os.date("%X") .. " ⌛")
     local diff = stoppedAt - M.initiated
     local repoName = M.getRepoName()
-    with(open(M.getRepoPath() .. '/.wt/progress.json', 'r+'), function (file)
-      local data = vim.json.decode(file:read("*a"))
-      file:seek('set')
-      local projectExists = M._progressProjectName(data, repoName)
+    local fullProgressPath = M.getRepoPath() .. '/.wt/progress.json'
+    local lastData = with(open(fullProgressPath), function (file)
+      return vim.json.decode(file:read("*a"))
+    end)
+    with(open(fullProgressPath, 'w'), function (file)
+      local projectExists = M._progressProjectName(lastData, repoName)
       if projectExists then
-        data[repoName].timeSpent = data[repoName].timeSpent + diff
+        lastData[projectExists][repoName].timeSpent = lastData[projectExists][repoName].timeSpent + diff
       else
         local newProject = {[repoName] = {timeSpent = diff}}
-        table.insert(data, newProject)
+        table.insert(lastData, newProject)
       end
-      P(data)
-      file:write(vim.json.encode(data))
+      file:write(vim.json.encode(lastData))
     end)
+    -- Reset initiation
+    M.initiated = nil
   else
     vim.notify("You haven't initiated to track your progress yet")
   end
@@ -119,13 +122,13 @@ end
   @param table Data from progress.json
   @param string Name of the project
 
-  @returns bool True if the name is there,
-    false otherwise
+  @returns int|bool The index of the project
+  if it exists or false otherwise
 ]]
 M._progressProjectName = function(data, name)
-  for _,v in ipairs(data) do
-    if v[1] == name then
-      return true
+  for i,v in ipairs(data) do
+    if v[name] then
+      return i
     end
   end
   return false
