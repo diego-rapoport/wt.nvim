@@ -1,9 +1,14 @@
 local ctx_manager = require'plenary.context_manager'
 local with = ctx_manager.with
 local open = ctx_manager.open
-local path = require'plenary.path'
 
 local M = {}
+
+M.getConfigPath = function ()
+  local configPath = vim.split(vim.o.packpath, ',')[1]
+  return configPath
+end
+M.configPath = M.getConfigPath()
 
 --[[
   Get the full path of the git repo
@@ -39,12 +44,6 @@ M.isGitRepo = function ()
   return io.popen("git rev-parse --is-inside-work-tree 2> /dev/null"):read()
 end
 
-local function checkFileExists(name)
-  local file = io.open(name, 'r')
-  if file ~=nil then io.close(file) return true else return false
-  end
-end
-
 M.createProgressFile = function (pathName)
   local data = {}
   local encoded = vim.json.encode(data)
@@ -56,36 +55,13 @@ M.createProgressFile = function (pathName)
   end)
 end
 
-M.initWT = function ()
-  if M.isGitRepo() then
-    local repoPath = M.getRepoPath()
-    M.repoPath = repoPath
-    local p = path:new(repoPath .. '/.wt')
-    if not(path.exists(p)) then
-      path.mkdir(p)
-      local progressFP = p.filename .. '/progress.json'
-      M.createProgressFile(progressFP)
-      vim.notify('Creating progress file')
-      vim.notify("WT path created and you can start it now")
-      return
-    end
-    vim.notify("WT already started inside this git project")
-    return
-  end
-  vim.notify("You're not inside a git project.")
-end
-
 M.getNow = function ()
   return os.time(os.date("!*t"))
 end
 
 M.startWT = function ()
-  if checkFileExists(M.getRepoPath() .. '/.wt/progress.json') then
-    M.initiated = M.getNow()
-    vim.notify("Beginning to work at " .. os.date("%X") .. " 💻")
-  else
-    vim.notify('Please start WT first with :InitWT')
-  end
+  M.initiated = M.getNow()
+  vim.notify("Beginning to work at " .. os.date("%X") .. " 💻")
 end
 
 M.stopWT = function ()
@@ -94,7 +70,7 @@ M.stopWT = function ()
     vim.notify("Ending work at " .. os.date("%X") .. " ⌛")
     local diff = stoppedAt - M.initiated
     local repoName = M.getRepoName()
-    local fullProgressPath = M.getRepoPath() .. '/.wt/progress.json'
+    local fullProgressPath = M.getConfigPath() .. '/.wt/progress.json'
     local lastData = with(open(fullProgressPath), function (file)
       return vim.json.decode(file:read("*a"))
     end)
@@ -111,7 +87,7 @@ M.stopWT = function ()
     -- Reset initiation
     M.initiated = nil
   else
-    vim.notify("You haven't initiated to track your progress yet")
+    vim.notify("You haven't initiated to track your progress yet 😅")
   end
 end
 
@@ -133,6 +109,7 @@ M._progressProjectName = function(data, name)
   end
   return false
 end
+
 
 return M
 

@@ -6,16 +6,13 @@ You also <b>keep your data</b>, generate your own reports and <b>manage it as yo
 
 ---
 ### How it works?
-<b>WT</b>(Working Time as it'll be called from now on) checks if you're inside a git repo and starts a new folder called `.wt` with a `progress.json` file inside(empty list).  
+<b>WT</b>(Working Time as it'll be called from now on) starts by creating a folder and a file inside your config path(`$NVIM_CONFIG/.wt/progress.json`).
+Then you should use `:StartWT` to begin tracking your progress. After you finish your work you should do `:StopWT` so it can save the time(in seconds)
+inside the `progress.json` file. The structure of what it saves is inside the Data section.
   
 Right now we have those ex commands:
-- InitWT
 - StartWT
 - StopWT
-
-##### InitWT
-This command <b>must be run</b> before you start tracking your wt. It'll check if you're already on a git project to create the folder
-and file needed to start tracking your progress.
 
 ##### StartWT
 This command will get the time as a starting point to track your progress.
