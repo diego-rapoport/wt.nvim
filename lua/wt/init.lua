@@ -4,10 +4,16 @@ local open = ctx_manager.open
 
 local M = {}
 
+--[[
+  This function gets your config path.
+
+  @returns str The config path of neovim
+]]
 M.getConfigPath = function ()
   local configPath = vim.split(vim.o.packpath, ',')[1]
   return configPath
 end
+-- Just for sake of convenience
 M.configPath = M.getConfigPath()
 
 --[[
@@ -44,6 +50,9 @@ M.isGitRepo = function ()
   return io.popen("git rev-parse --is-inside-work-tree 2> /dev/null"):read()
 end
 
+--[[
+  This function creates an empty listed json file.
+]]
 M.createProgressFile = function (pathName)
   local data = {}
   local encoded = vim.json.encode(data)
@@ -55,15 +64,31 @@ M.createProgressFile = function (pathName)
   end)
 end
 
+--[[
+  Function to get the timestamp it is called.
+
+  @returns datetime
+]]
 M.getNow = function ()
   return os.time(os.date("!*t"))
 end
 
+--[[
+  This is the command that starts tracking
+  the time when you call it.
+  The ex-command is :StartWT
+]]
 M.startWT = function ()
   M.initiated = M.getNow()
   vim.notify("Beginning to work at " .. os.date("%X") .. " 💻")
 end
 
+--[[
+  This is the command that stops tracking
+  the time you've worked on.
+  It saves the progress on default progress
+  file and restarts the initiated time.
+]]
 M.stopWT = function ()
   if M.initiated then
     local stoppedAt = M.getNow()
@@ -109,7 +134,6 @@ M._progressProjectName = function(data, name)
   end
   return false
 end
-
 
 return M
 
